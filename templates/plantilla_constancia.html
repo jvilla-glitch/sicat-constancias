@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Constancia Sanitaria - {{ c.folio }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2.5cm 2cm 2cm 2cm;
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+        }
+        
+        .header {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+        
+        .header p {
+            margin: 5px 0;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .destinatario {
+            margin: 30px 0;
+        }
+        
+        .destinatario h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .cuerpo {
+            text-align: justify;
+            margin: 20px 0;
+        }
+        
+        .cuerpo p {
+            margin: 15px 0;
+        }
+        
+        .datos-establecimiento {
+            margin: 20px 0 20px 40px;
+        }
+        
+        .firma {
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        .firma p {
+            margin: 10px 0;
+        }
+        
+        .firma .cargo {
+            font-weight: bold;
+            margin-top: 30px;
+        }
+        
+        .firma .nombre {
+            font-weight: bold;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <p><span class="bold">FOLIO No.: {{ c.folio }}-2025</span></p>
+        <p><span class="bold">ASUNTO: CONSTANCIA SANITARIA</span></p>
+        <p><span class="bold">EXPEDIENTE: {{ c.expediente }}</span></p>
+        <p><span class="bold">VIGENCIA: {{ c.vigencia }}</span></p>
+        <p>{{ c.fecha }}</p>
+    </div>
+
+    <div class="destinatario">
+        <h2>{{ c.nombre_propietario }}</h2>
+        <h2>{{ c.domicilio_propietario }}</h2>
+    </div>
+
+    <div class="cuerpo">
+        <p>
+            Se expide la presente <span class="bold">CONSTANCIA SANITARIA</span> a petición del 
+            interesado en virtud de la solicitud mediante la cual manifiesta, bajo protesta de 
+            decir verdad, que el establecimiento reúne los requisitos sanitarios para su 
+            funcionamiento, destinado a:
+        </p>
+
+        <div class="datos-establecimiento">
+            <p><span class="bold">{{ c.giro }}</span></p>
+            <p>Denominado: {{ c.denominado }}</p>
+            <p>Ubicado en: {{ c.ubicado }}</p>
+            <p>Entre las calles: {{ c.entre_calles }}</p>
+            <p>Colonia: {{ c.colonia }}    Código Postal: {{ c.codigo_postal }}</p>
+            <p>{{ c.ciudad }}</p>
+        </div>
+
+        <p>
+            Lo anterior, en apego a lo contemplado en el artículo 21, fracción IV de la Ley sobre 
+            Operación y Funcionamiento de Establecimientos Destinados a la Producción, Distribución 
+            Venta y Consumo de Bebidas Alcohólicas del Estado de Sinaloa, 16, fracción III de su 
+            Reglamento, en relación con el artículo 372 de la Ley General de Salud, los artículos 
+            30, 32, 33 de su Reglamento de Control Sanitario de Productos y Servicios y, en 
+            consecuencia, con los artículos 8, 15, 16, 17, 28, 36 y 41 de la Ley General para el 
+            Control de Tabaco; con el apercibimiento que esta autoridad podrá hacer uso de la 
+            figura de la <span class="bold">REVOCACIÓN</span> de este tipo de constancias sanitarias 
+            así requeridas cuando hubiere desobediencia en acatar las disposiciones sanitarias en 
+            los términos de la Ley y demás disposiciones legales aplicables.
+        </p>
+    </div>
+
+    <div class="firma">
+        <p class="bold">A T E N T A M E N T E</p>
+        <p class="cargo">COMISIONADA ESTATAL PARA LA PROTECCION CONTRA RIESGOS SANITARIOS DE SINALOA</p>
+        <p class="nombre">{{ c.nombre_comisionado }}</p>
+    </div>
+</body>
+</html>

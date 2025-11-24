@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importación Masiva - Sistema de Constancias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #2c3e50;
+            --primary-blue: #3498db;
+            --primary-green: #27ae60;
+            --primary-red: #e74c3c;
+            --primary-orange: #e67e22;
+            --light-bg: #ecf0f1;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 140px;
+        }
+
+        /* HEADER ESTILO SICAT */
+        .header-sicat {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .header-top {
+            padding: 15px 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            color: #3498db;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .header-info {
+            position: absolute;
+            right: 30px;
+            top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .time-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-salir {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-salir:hover {
+            background: #c0392b;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .header-nav {
+            background: rgba(0,0,0,0.2);
+            padding: 12px 30px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-title {
+            color: var(--primary-dark);
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* CARD DE INFORMACIÓN */
+        .info-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .info-card-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card-text {
+            color: #1565c0;
+            margin: 0;
+        }
+
+        /* BOTONES DE ACCIÓN */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-action {
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-download-template {
+            background: white;
+            border: 2px solid var(--primary-dark);
+            color: var(--primary-dark);
+        }
+
+        .btn-download-template:hover {
+            background: var(--primary-dark);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn-select-file {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .btn-select-file:hover {
+            background: #1a252f;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        }
+
+        /* ZONA DE ARRASTRE */
+        .upload-zone {
+            background: white;
+            border: 3px dashed #bdc3c7;
+            border-radius: 15px;
+            padding: 60px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--primary-dark);
+            background: #f8f9fa;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 5rem;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .upload-title {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .upload-formats {
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+
+        /* ARCHIVO SELECCIONADO */
+        .file-selected {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            display: none;
+        }
+
+        .file-selected.show {
+            display: block;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 3rem;
+            color: var(--primary-green);
+        }
+
+        .file-details h4 {
+            color: var(--primary-dark);
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .file-details p {
+            color: #7f8c8d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .btn-remove-file {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .btn-remove-file:hover {
+            background: #c0392b;
+        }
+
+        /* BOTÓN IMPORTAR */
+        .btn-import {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .btn-import.show {
+            display: block;
+        }
+
+        .btn-import:hover:not(:disabled) {
+            background: #229954;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-import:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* TABLA DE CONSTANCIAS */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .btn-select-all {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-select-all:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .table-sicat {
+            width: 100%;
+            margin: 0;
+        }
+
+        .table-sicat thead {
+            background: #f8f9fa;
+        }
+
+        .table-sicat thead th {
+            padding: 15px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table-sicat tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .table-sicat tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* BOTÓN GENERAR */
+        .btn-generate {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn-generate.show {
+            display: block;
+        }
+
+        .btn-generate:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-generate:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* ESTADO VACÍO */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 180px;
+            }
+
+            .header-info {
+                position: static;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .table-sicat {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER ESTILO SICAT -->
+    <header class="header-sicat">
+        <div class="header-top">
+            <div class="header-title">
+                <i class="fas fa-file-medical header-icon"></i>
+                <div>
+                    <h1>SISTEMA DE CONSTANCIAS</h1>
+                    <div class="header-subtitle">Sistema de Gestión de Constancias Sanitarias - COEPRISS</div>
+                </div>
+            </div>
+            
+            <div class="header-info">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ current_user.nombre }}</span>
+                </div>
+                <div class="time-badge">
+                    <i class="fas fa-clock"></i>
+                    <span id="currentTime"></span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-salir">
+                    <i class="fas fa-sign-out-alt"></i>
+                    SALIR
+                </a>
+            </div>
+        </div>
+        
+        <div class="header-nav">
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-home me-2"></i>Dashboard</a></li>
+                <li><a href="/manual"><i class="fas fa-file-alt me-2"></i>Manuales</a></li>
+                <li><a href="/masivo" class="active"><i class="fas fa-layer-group me-2"></i>Masivas</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-container">
+        <!-- TÍTULO -->
+        <h1 class="page-title">
+            <i class="fas fa-layer-group"></i>
+            Importación Masiva de Constancias
+        </h1>
+
+        <!-- CARD DE INFORMACIÓN -->
+        <div class="info-card">
+            <div class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Importación de Múltiples Constancias
+            </div>
+            <p class="info-card-text">
+                Sube un archivo Excel (.xlsx) o CSV con los datos de múltiples constancias. 
+                Descarga la plantilla si necesitas conocer el formato exacto.
+            </p>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <div class="action-buttons">
+            <a href="/masivo/plantilla" class="btn-action btn-download-template">
+                <i class="fas fa-download fa-lg"></i>
+                Descargar Plantilla Excel
+            </a>
+            <button class="btn-action btn-select-file" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload fa-lg"></i>
+                Seleccionar Archivo
+            </button>
+        </div>
+
+        <!-- INPUT FILE OCULTO -->
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+
+        <!-- ZONA DE ARRASTRE -->
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-title">Arrastra tu archivo aquí</div>
+            <div class="upload-subtitle">o haz clic para seleccionarlo</div>
+            <div class="upload-formats">
+                Formatos soportados: .xlsx, .xls, .csv (Máximo 5MB)
+            </div>
+        </div>
+
+        <!-- ARCHIVO SELECCIONADO -->
+        <div class="file-selected" id="fileSelected">
+            <div class="file-info">
+                <div class="file-icon">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+                <div class="file-details">
+                    <h4 id="fileName">archivo.xlsx</h4>
+                    <p id="fileSize">0 KB</p>
+                </div>
+                <button class="btn-remove-file" onclick="removeFile()">
+                    <i class="fas fa-times me-2"></i>
+                    Remover
+                </button>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" 
+                     style="width: 0%"
+                     id="progressBar">0%</div>
+            </div>
+        </div>
+
+        <!-- BOTÓN IMPORTAR -->
+        <button class="btn-import" id="btnImport" onclick="importarArchivo()">
+            <i class="fas fa-file-import me-2"></i>
+            IMPORTAR CONSTANCIAS
+        </button>
+
+        <!-- TABLA DE CONSTANCIAS DISPONIBLES -->
+        <div class="table-container" id="tableContainer" style="display: none;">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list-check"></i>
+                    Constancias Disponibles para Generar
+                </h3>
+                <button class="btn-select-all" onclick="toggleSelectAll()">
+                    <i class="fas fa-check-double me-2"></i>
+                    Seleccionar Todas
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sicat" id="constanciasTable">
+                    <thead>
+                        <tr>
+                            <th width="50">
+                                <input type="checkbox" class="form-check-input" id="checkAll">
+                            </th>
+                            <th>FOLIO</th>
+                            <th>FECHA</th>
+                            <th>PROPIETARIO</th>
+                            <th>GIRO</th>
+                            <th>DENOMINACIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="constanciasBody">
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state d-none" id="emptyState">
+                <i class="fas fa-inbox"></i>
+                <h4>No hay constancias disponibles</h4>
+                <p>Importa constancias para poder generarlas</p>
+            </div>
+        </div>
+
+        <!-- BOTÓN GENERAR DOCUMENTOS -->
+        <button class="btn-generate" id="btnGenerate" onclick="generarDocumentos()">
+            <i class="fas fa-file-word me-2"></i>
+            GENERAR DOCUMENTOS SELECCIONADOS
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedFile = null;
+        let constanciasData = [];
+
+        // Reloj en tiempo real
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-MX', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true 
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Cargar constancias disponibles
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarConstancias();
+        });
+
+        async function cargarConstancias() {
+            try {
+                const response = await fetch('/api/constancias');
+                constanciasData = await response.json();
+                
+                if (constanciasData.length > 0) {
+                    mostrarTabla();
+                    actualizarTabla();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Manejo del input file
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Zona de arrastre
+        const uploadZone = document.getElementById('uploadZone');
+
+        uploadZone.addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            // Validar tipo de archivo
+            const validTypes = ['.xlsx', '.xls', '.csv'];
+            const extension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(extension)) {
+                alert('Tipo de archivo no válido. Use .xlsx, .xls o .csv');
+                return;
+            }
+
+            // Validar tamaño (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Máximo 5MB');
+                return;
+            }
+
+            selectedFile = file;
+            
+            // Mostrar info del archivo
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileSelected').classList.add('show');
+            document.getElementById('btnImport').classList.add('show');
+            uploadZone.style.display = 'none';
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('fileSelected').classList.remove('show');
+            document.getElementById('btnImport').classList.remove('show');
+            document.getElementById('uploadZone').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        async function importarArchivo() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('archivo', selectedFile);
+
+            document.getElementById('progressContainer').classList.add('show');
+            document.getElementById('btnImport').disabled = true;
+
+            try {
+                const response = await fetch('/masivo/importar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${result.mensaje}\n\nImportadas: ${result.constancias_creadas.length}\nErrores: ${result.errores.length}`);
+                    removeFile();
+                    await cargarConstancias();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al importar el archivo');
+            } finally {
+                document.getElementById('progressContainer').classList.remove('show');
+                document.getElementById('btnImport').disabled = false;
+            }
+        }
+
+        function mostrarTabla() {
+            document.getElementById('tableContainer').style.display = 'block';
+            document.getElementById('btnGenerate').classList.add('show');
+        }
+
+        function actualizarTabla() {
+            const tbody = document.getElementById('constanciasBody');
+            tbody.innerHTML = '';
+
+            constanciasData.forEach(constancia => {
+                const row = `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="form-check-input constancia-check" 
+                                   value="${constancia.id}" onchange="updateGenerateButton()">
+                        </td>
+                        <td><strong>${constancia.folio}-2025</strong></td>
+                        <td>${constancia.fecha}</td>
+                        <td>${constancia.nombre_propietario}</td>
+                        <td>${constancia.giro.substring(0, 40)}...</td>
+                        <td>${constancia.denominado}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function toggleSelectAll() {
+            const checkAll = document.getElementById('checkAll');
+            const checks = document.querySelectorAll('.constancia-check');
+            
+            checkAll.checked = !checkAll.checked;
+            checks.forEach(check => check.checked = checkAll.checked);
+            
+            updateGenerateButton();
+        }
+
+        document.getElementById('checkAll')?.addEventListener('change', function() {
+            const checks = document.querySelectorAll('.constancia-check');
+            checks.forEach(check => check.checked = this.checked);
+            updateGenerateButton();
+        });
+
+        function updateGenerateButton() {
+            const checks = document.querySelectorAll('.constancia-check:checked');
+            const btn = document.getElementById('btnGenerate');
+            
+            if (checks.length > 0) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-file-word me-2"></i>GENERAR ${checks.length} DOCUMENTO(S) SELECCIONADO(S)`;
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-file-word me-2"></i>GENERAR DOCUMENTOS SELECCIONADOS`;
+            }
+        }
+
+        async function generarDocumentos() {
+            const checks = document.querySelectorAll('.constancia-check:checked');
+            
+            if (checks.length === 0) {
+                alert('Selecciona al menos una constancia');
+                return;
+            }
+
+            const ids = Array.from(checks).map(check => parseInt(check.value));
+
+            try {
+                document.getElementById('btnGenerate').disabled = true;
+                document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>GENERANDO...';
+
+                const response = await fetch('/masivo/generar-pdfs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ids: ids })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `constancias_masivas_${new Date().getTime()}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    alert('✅ Documentos generados exitosamente');
+                } else {
+                    alert('❌ Error al generar documentos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al generar documentos');
+            } finally {
+                document.getElementById('btnGenerate').disabled = false;
+                updateGenerateButton();
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
