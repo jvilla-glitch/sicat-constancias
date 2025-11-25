@@ -793,35 +793,57 @@
         }
 
         async function importarArchivo() {
-            if (!selectedFile) return;
+            if (!selectedFile) {
+                alert('⚠️ Por favor selecciona un archivo primero');
+                return;
+            }
 
+            // ============================================
+            // ✅ CORRECCIÓN CRÍTICA: Usar 'file' no 'archivo'
+            // ============================================
             const formData = new FormData();
-            formData.append('archivo', selectedFile);
+            formData.append('file', selectedFile);  // ✅ Debe ser 'file' para que coincida con Flask
 
             document.getElementById('progressContainer').classList.add('show');
             document.getElementById('btnImport').disabled = true;
+            document.getElementById('btnImport').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>IMPORTANDO...';
 
             try {
                 const response = await fetch('/masivo/importar', {
                     method: 'POST',
                     body: formData
+                    // ⚠️ NO agregar Content-Type header - FormData lo maneja automáticamente
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ ${result.mensaje}\n\nImportadas: ${result.constancias_creadas.length}\nErrores: ${result.errores.length}`);
+                    let mensaje = `✅ ${result.mensaje}`;
+                    if (result.total_importadas) {
+                        mensaje += `\n\n📊 Importadas: ${result.total_importadas}`;
+                    }
+                    if (result.total_errores > 0) {
+                        mensaje += `\n⚠️ Errores: ${result.total_errores}`;
+                        if (result.errores && result.errores.length > 0) {
+                            mensaje += '\n\nDetalles de errores:\n' + result.errores.slice(0, 5).join('\n');
+                            if (result.errores.length > 5) {
+                                mensaje += `\n... y ${result.errores.length - 5} errores más`;
+                            }
+                        }
+                    }
+                    alert(mensaje);
                     removeFile();
                     await cargarConstancias();
                 } else {
                     alert('❌ Error: ' + result.error);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('❌ Error al importar el archivo');
+                console.error('Error completo:', error);
+                alert('❌ Error al importar el archivo: ' + error.message);
             } finally {
                 document.getElementById('progressContainer').classList.remove('show');
                 document.getElementById('btnImport').disabled = false;
+                document.getElementById('btnImport').innerHTML = '<i class="fas fa-file-import me-2"></i>IMPORTAR CONSTANCIAS';
             }
         }
 
@@ -885,7 +907,7 @@
             const checks = document.querySelectorAll('.constancia-check:checked');
             
             if (checks.length === 0) {
-                alert('Selecciona al menos una constancia');
+                alert('⚠️ Selecciona al menos una constancia');
                 return;
             }
 
@@ -916,11 +938,12 @@
 
                     alert('✅ Documentos generados exitosamente');
                 } else {
-                    alert('❌ Error al generar documentos');
+                    const error = await response.json();
+                    alert('❌ Error al generar documentos: ' + (error.error || 'Error desconocido'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ Error al generar documentos');
+                alert('❌ Error al generar documentos: ' + error.message);
             } finally {
                 document.getElementById('btnGenerate').disabled = false;
                 updateGenerateButton();
@@ -929,8 +952,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
