@@ -14,6 +14,10 @@ from io import BytesIO
 app = Flask(__name__, 
             static_folder='static',
             static_url_path='/static')
+
+# ============================================
+# CONFIGURACIÓN DE BASE DE DATOS
+# ============================================
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
@@ -26,7 +30,22 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///constancias.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
+
+# ============================================
+# CONFIGURACIÓN DE UPLOADS - CRÍTICO PARA RENDER
+# ============================================
+# Detectar si estamos en Render
+if os.environ.get('RENDER'):
+    # En Render usar /tmp que tiene permisos de escritura
+    app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
+    print("🌐 Modo PRODUCCIÓN (Render) - Usando /tmp/uploads")
+else:
+    # En local usar carpeta uploads normal
+    app.config['UPLOAD_FOLDER'] = 'uploads'
+    print("💻 Modo LOCAL - Usando ./uploads")
+
+# Límite de tamaño de archivo: 16MB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # Obtener SECRET_KEY de variable de entorno o usar una por defecto
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu_clave_secreta_muy_segura_cambiarla_en_produccion')
@@ -41,7 +60,11 @@ login_manager.login_message = 'Por favor inicia sesión para acceder a esta pág
 login_manager.login_message_category = 'warning'
 
 # Asegurar que exista la carpeta de uploads
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    print(f"✅ Carpeta de uploads creada/verificada: {app.config['UPLOAD_FOLDER']}")
+except Exception as e:
+    print(f"⚠️ No se pudo crear carpeta de uploads: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -159,7 +182,7 @@ def editar_manual(id):
     return render_template('manual/formulario.html', usuario=current_user, constancia=constancia, modo='editar')
 
 # ============================================
-# RUTAS DE MASIVAS (AGREGADAS - NUEVA)
+# RUTAS DE MASIVAS
 # ============================================
 
 @app.route('/masivo')
@@ -172,23 +195,66 @@ def pagina_masivas():
 @app.route('/masivo/importar', methods=['POST'])
 @login_required
 def importar_masivo():
-    """Importar constancias desde archivo Excel/CSV"""
+    """Importar constancias desde archivo Excel/CSV - PROCESAMIENTO EN MEMORIA"""
     try:
+        # Verificar que se envió un archivo
         if 'file' not in request.files:
-            return jsonify({'success': False, 'error': 'No se envió ningún archivo'}), 400
+            return jsonify({
+                'success': False, 
+                'error': 'No se envió ningún archivo. Por favor selecciona un archivo Excel o CSV.'
+            }), 400
         
         file = request.files['file']
         
+        # Verificar que se seleccionó un archivo
         if file.filename == '':
-            return jsonify({'success': False, 'error': 'No se seleccionó ningún archivo'}), 400
+            return jsonify({
+                'success': False, 
+                'error': 'No se seleccionó ningún archivo. Por favor selecciona un archivo.'
+            }), 400
         
-        # Leer el archivo Excel
-        if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
-            df = pd.read_excel(file)
-        elif file.filename.endswith('.csv'):
-            df = pd.read_csv(file)
-        else:
-            return jsonify({'success': False, 'error': 'Formato de archivo no soportado. Use Excel o CSV'}), 400
+        # Verificar extensión del archivo
+        if not (file.filename.endswith('.xlsx') or file.filename.endswith('.xls') or file.filename.endswith('.csv')):
+            return jsonify({
+                'success': False, 
+                'error': 'Formato de archivo no soportado. Use archivos .xlsx, .xls o .csv'
+            }), 400
+        
+        # ============================================
+        # PROCESAR ARCHIVO DIRECTAMENTE EN MEMORIA
+        # No se guarda en disco - Compatible con Render
+        # ============================================
+        try:
+            if file.filename.endswith('.csv'):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Error al leer el archivo: {str(e)}. Verifica que el archivo no esté corrupto.'
+            }), 400
+        
+        # Verificar que el archivo no esté vacío
+        if df.empty:
+            return jsonify({
+                'success': False,
+                'error': 'El archivo está vacío. Por favor verifica el contenido del archivo.'
+            }), 400
+        
+        # Verificar columnas requeridas
+        columnas_requeridas = [
+            'folio', 'fecha', 'vigencia', 'expediente', 'nombre_propietario',
+            'domicilio_propietario', 'giro', 'denominado', 'ubicado', 'entre_calles',
+            'colonia', 'ciudad', 'codigo_postal', 'nombre_comisionado'
+        ]
+        
+        columnas_faltantes = [col for col in columnas_requeridas if col not in df.columns]
+        if columnas_faltantes:
+            return jsonify({
+                'success': False,
+                'error': f'Faltan las siguientes columnas requeridas: {", ".join(columnas_faltantes)}'
+            }), 400
         
         constancias_creadas = []
         errores = []
@@ -198,31 +264,42 @@ def importar_masivo():
             try:
                 # Verificar que el folio no exista
                 folio = str(row['folio']).strip()
+                
+                # Saltar filas con folio vacío
+                if not folio or folio == 'nan' or folio == '':
+                    continue
+                
                 folio_existente = Constancia.query.filter_by(folio=folio).first()
                 
                 if folio_existente:
                     errores.append(f"Fila {index + 2}: El folio {folio} ya existe")
                     continue
                 
+                # Función auxiliar para limpiar valores
+                def limpiar_valor(valor):
+                    if pd.isna(valor) or str(valor).strip() == '' or str(valor) == 'nan':
+                        return ''
+                    return str(valor).strip()
+                
                 # Crear la constancia
                 constancia = Constancia(
-                    fecha=str(row['fecha']),
+                    fecha=limpiar_valor(row['fecha']),
                     folio=folio,
-                    vigencia=str(row['vigencia']),
-                    expediente=str(row['expediente']),
-                    nombre_propietario=str(row['nombre_propietario']),
-                    domicilio_propietario=str(row['domicilio_propietario']),
-                    giro=str(row['giro']),
-                    denominado=str(row['denominado']),
-                    ubicado=str(row['ubicado']),
-                    entre_calles=str(row['entre_calles']),
-                    colonia=str(row['colonia']),
-                    ciudad=str(row['ciudad']),
-                    codigo_postal=str(row['codigo_postal']),
-                    nombre_comisionado=str(row['nombre_comisionado']),
-                    recibo_pago=str(row.get('recibo_pago', '')),
-                    referencia_comprobante=str(row.get('referencia_comprobante', '')),
-                    constancias_avala=str(row.get('constancias_avala', ''))
+                    vigencia=limpiar_valor(row['vigencia']),
+                    expediente=limpiar_valor(row['expediente']),
+                    nombre_propietario=limpiar_valor(row['nombre_propietario']),
+                    domicilio_propietario=limpiar_valor(row['domicilio_propietario']),
+                    giro=limpiar_valor(row['giro']),
+                    denominado=limpiar_valor(row['denominado']),
+                    ubicado=limpiar_valor(row['ubicado']),
+                    entre_calles=limpiar_valor(row['entre_calles']),
+                    colonia=limpiar_valor(row['colonia']),
+                    ciudad=limpiar_valor(row['ciudad']),
+                    codigo_postal=limpiar_valor(row['codigo_postal']),
+                    nombre_comisionado=limpiar_valor(row['nombre_comisionado']),
+                    recibo_pago=limpiar_valor(row.get('recibo_pago', '')),
+                    referencia_comprobante=limpiar_valor(row.get('referencia_comprobante', '')),
+                    constancias_avala=limpiar_valor(row.get('constancias_avala', ''))
                 )
                 
                 db.session.add(constancia)
@@ -234,17 +311,29 @@ def importar_masivo():
         # Guardar todas las constancias
         if constancias_creadas:
             db.session.commit()
+            mensaje = f'✅ Se importaron {len(constancias_creadas)} constancias exitosamente'
+        else:
+            mensaje = '⚠️ No se importó ninguna constancia'
+        
+        if errores:
+            mensaje += f' | ⚠️ {len(errores)} errores encontrados'
         
         return jsonify({
             'success': True,
-            'mensaje': f'Importación completada',
+            'mensaje': mensaje,
+            'total_importadas': len(constancias_creadas),
+            'total_errores': len(errores),
             'constancias_creadas': constancias_creadas,
             'errores': errores
         })
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': f'Error al procesar el archivo: {str(e)}'}), 500
+        print(f"❌ Error en importación masiva: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'error': f'Error al procesar el archivo: {str(e)}'
+        }), 500
 
 # ============================================
 # FUNCIÓN PARA GENERAR DOCUMENTO WORD
@@ -671,8 +760,6 @@ def api_estadisticas():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
 
 
 
