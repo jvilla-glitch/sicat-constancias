@@ -363,7 +363,7 @@ def crear_documento_word(constancia):
     p = doc.add_paragraph()
     configurar_formato_parrafo(p, WD_ALIGN_PARAGRAPH.RIGHT)
     
-    run = p.add_run(f'FOLIO No.: {constancia.folio}-2025\n')
+    run = p.add_run(f'FOLIO No.: {constancia.folio}-2026\n')
     run.bold = True
     run.font.size = Pt(12)
     
@@ -432,16 +432,16 @@ def crear_documento_word(constancia):
     run.bold = True
     run.font.size = Pt(12)
     
-    run = p.add_run(f'Denominado: {constancia.denominado}\n')
+    run = p.add_run(f'DENOMINADO: {constancia.denominado}\n')
     run.font.size = Pt(12)
     
-    run = p.add_run(f'Ubicado en: {constancia.ubicado}\n')
+    run = p.add_run(f'UBICADO EN: {constancia.ubicado}\n')
     run.font.size = Pt(12)
     
-    run = p.add_run(f'Entre las calles: {constancia.entre_calles}\n')
+    run = p.add_run(f'ENTRE LAS CALLES: {constancia.entre_calles}\n')
     run.font.size = Pt(12)
     
-    run = p.add_run(f'Colonia: {constancia.colonia}    Código Postal: {constancia.codigo_postal}\n')
+    run = p.add_run(f'COLONIA: {constancia.colonia}    CÓDIGO POSTAL: {constancia.codigo_postal}\n')
     run.font.size = Pt(12)
     
     run = p.add_run(constancia.ciudad)
