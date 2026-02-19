@@ -757,7 +757,27 @@ def api_estadisticas():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+@app.route('/exportar-datos')
+@login_required
+def exportar_datos():
+    import csv
+    from io import StringIO
+    constancias = Constancia.query.all()
+    output = StringIO()
+    cols = ['fecha','folio','vigencia','expediente','nombre_propietario',
+            'domicilio_propietario','giro','denominado','ubicado','entre_calles',
+            'colonia','ciudad','codigo_postal','nombre_comisionado',
+            'recibo_pago','referencia_comprobante','constancias_avala']
+    writer = csv.DictWriter(output, fieldnames=cols, extrasaction='ignore')
+    writer.writeheader()
+    writer.writerows([c.to_dict() for c in constancias])
+    output.seek(0)
+    return send_file(
+        BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='constancias_export.csv'
+    )
 if __name__ == '__main__':
     app.run(debug=True)
 
